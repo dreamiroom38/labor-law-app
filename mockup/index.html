@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>노동법전 화면 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500;700&display=swap">
+<style>
+/* Layout: 상단 고정 검색바 + 화면별 2단(PC) / 1단(휴대폰). 법전 종이 느낌의 차가운 흰색 위에 남색 잉크, 붉은 인주색은 '개정' 표시에만 사용 */
+:root {
+  --paper: #f7f8f6;
+  --surface: #ffffff;
+  --ink: #18212b;
+  --muted: #5b6671;
+  --line: #dfe3e1;
+  --accent: #1d4f7a;
+  --accent-soft: #e6eef5;
+  --seal: #a8322d;
+  --seal-soft: #f8e9e7;
+  --mark: #fff1b8;
+  --demo: #6b4e00;
+  --demo-bg: #fff6d6;
+  --f-display: "Noto Serif KR", "Nanum Myeongjo", "Batang", serif;
+  --f-ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12171c; --surface: #1a2027; --ink: #e7ebee; --muted: #9aa5af; --line: #2c343d;
+    --accent: #8db8e0; --accent-soft: #1f2f3f; --seal: #e98a82; --seal-soft: #3a2220;
+    --mark: #5a4a10; --demo: #f1d27a; --demo-bg: #2e2712; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12171c; --surface: #1a2027; --ink: #e7ebee; --muted: #9aa5af; --line: #2c343d;
+  --accent: #8db8e0; --accent-soft: #1f2f3f; --seal: #e98a82; --seal-soft: #3a2220;
+  --mark: #5a4a10; --demo: #f1d27a; --demo-bg: #2e2712; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-ui); font-size: 15px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* 시안 안내 띠 */
+.demo { background: var(--demo-bg); color: var(--demo); font-size: 13px; border-bottom: 1px solid var(--line); }
+.demo .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding-block: 8px; }
+.demo strong { font-weight: 600; }
+.demo nav { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.demo nav a { padding: 3px 10px; border-radius: 999px; border: 1px solid currentColor; opacity: .75; }
+.demo nav a[aria-current="page"] { opacity: 1; background: var(--demo); color: var(--demo-bg); border-color: var(--demo); }
+
+/* 상단바 */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; align-items: center; gap: 16px; padding-block: 12px; }
+.brand { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: -.01em; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.brand .seal { width: 26px; height: 26px; border-radius: 6px; background: var(--seal); color: #fff; font-size: 14px; display: grid; place-items: center; }
+.search { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; }
+.search:focus-within { border-color: var(--accent); }
+.search svg { flex: none; color: var(--muted); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: inherit; padding: 10px 0; outline: none; }
+.search button { border: 0; background: var(--accent); color: var(--surface); border-radius: 7px; padding: 5px 12px; font-size: 14px; cursor: pointer; }
+@media (max-width: 560px) {
+  .bar .wrap { flex-direction: column; align-items: stretch; gap: 10px; }
+}
+
+main { padding-block: 24px 64px; }
+.screen[hidden] { display: none !important; }
+h2.sec { font-family: var(--f-display); font-size: 18px; margin: 0; display: flex; align-items: baseline; gap: 10px; }
+h2.sec small { font-family: var(--f-ui); font-size: 13px; font-weight: 400; color: var(--muted); }
+.ex { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--demo); background: var(--demo-bg); border: 1px dashed var(--demo); border-radius: 4px; padding: 0 6px; line-height: 1.6; vertical-align: middle; }
+
+/* 첫 화면 */
+.home { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 32px; align-items: start; }
+@media (max-width: 860px) { .home { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.panel { display: grid; gap: 12px; min-width: 0; }
+.recent { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.recent li { list-style: none; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.recent li:first-child { border-top: 0; }
+.recent ul { margin: 0; padding: 0; }
+.kind { grid-row: span 2; align-self: start; font-size: 12px; font-weight: 600; color: var(--seal); background: var(--seal-soft); border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.recent .name { font-weight: 500; }
+.recent .meta { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+
+.laws { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 6px 16px; }
+@media (max-width: 560px) { .laws { grid-template-columns: minmax(0, 1fr); } }
+.laws li { border-bottom: 1px solid var(--line); }
+.laws li:nth-last-child(-n+2) { border-bottom: 0; }
+@media (max-width: 560px) { .laws li:nth-last-child(2) { border-bottom: 1px solid var(--line); } }
+.laws a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 2px; font-size: 14.5px; }
+.laws a:hover { color: var(--accent); }
+.laws a::after { content: "›"; color: var(--muted); font-size: 18px; line-height: 1; }
+
+/* 법령 화면 */
+.lawhead { display: grid; gap: 6px; margin-bottom: 18px; }
+.crumb { font-size: 13px; color: var(--muted); }
+.crumb a:hover { color: var(--accent); }
+.lawhead h1 { font-family: var(--f-display); font-size: clamp(24px, 4vw, 32px); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.lawmeta { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; font-variant-numeric: tabular-nums; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 22px; overflow-x: auto; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 16px; font-size: 15px; color: var(--muted); cursor: pointer; white-space: nowrap; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--accent); }
+.lawbody { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 860px) { .lawbody { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
+.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 80px); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; max-height: calc(100vh - 110px); overflow: auto; font-size: 14px; }
+.toc summary { list-style: none; cursor: pointer; font-weight: 600; padding: 2px 8px 8px; display: flex; justify-content: space-between; }
+.toc summary::-webkit-details-marker { display: none; }
+.toc .ch { font-size: 12px; color: var(--muted); padding: 10px 8px 2px; letter-spacing: .02em; }
+.toc a { display: block; padding: 5px 8px; border-radius: 6px; }
+.toc a:hover { background: var(--accent-soft); }
+.toc a.on { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+@media (max-width: 860px) { .toc { position: static; max-height: none; } }
+.articles { display: grid; gap: 0; min-width: 0; }
+.chapter { font-family: var(--f-display); font-weight: 700; font-size: 16px; text-align: center; padding: 18px 0 6px; color: var(--muted); }
+article.jo { padding: 18px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 90px; }
+article.jo h3 { margin: 0 0 8px; font-family: var(--f-display); font-size: 17px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+article.jo h3 .tag { font-family: var(--f-ui); font-size: 12px; font-weight: 600; color: var(--seal); background: var(--seal-soft); border-radius: 4px; padding: 0 7px; }
+article.jo p { margin: 0 0 6px; font-family: var(--f-display); font-weight: 500; font-size: 16px; line-height: 1.85; max-width: 68ch; color: var(--muted); }
+article.jo ol { margin: 4px 0 0; padding-left: 1.6em; font-family: var(--f-display); color: var(--muted); line-height: 1.85; max-width: 66ch; }
+
+/* 검색 결과 */
+.reshead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 18px; }
+.reshead h1 { font-family: var(--f-display); font-size: 22px; margin: 0; }
+.reshead h1 q { color: var(--accent); quotes: "‘" "’"; }
+.reshead span { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.results { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 860px) { .results { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
+.filter { display: grid; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px; font-size: 14px; }
+.filter a { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 6px; }
+.filter a.on { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.filter b { font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 860px) {
+  .filter { display: flex; overflow-x: auto; padding: 6px; }
+  .filter a { white-space: nowrap; flex: none; gap: 6px; }
+}
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.groups { display: grid; gap: 16px; min-width: 0; }
+.group header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--paper); }
+.group header h2 { font-family: var(--f-display); font-size: 16px; margin: 0; }
+.group header span { font-size: 13px; color: var(--muted); }
+.hit { display: block; padding: 14px 16px; border-top: 1px solid var(--line); }
+.hit:first-of-type { border-top: 0; }
+.hit:hover { background: var(--accent-soft); }
+.hit .t { font-weight: 600; font-size: 14.5px; }
+.hit .s { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+mark { background: var(--mark); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="demo">
+  <div class="wrap">
+    <span><strong>화면 시안</strong> · 실제 법령 데이터가 아닙니다. 노란 점선 <span class="ex">예시</span> 표시가 있는 내용은 모양을 보여주기 위한 자리 채움 글입니다.</span>
+    <nav aria-label="시안 화면 선택">
+      <a href="#home" data-go="home">① 첫 화면</a>
+      <a href="#law" data-go="law">② 법령 화면</a>
+      <a href="#search" data-go="search">③ 검색 결과</a>
+    </nav>
+  </div>
+</div>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#home"><span class="seal" aria-hidden="true">法</span>노동법전</a>
+    <form class="search" id="searchForm" role="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="조문 내용, 법령 이름으로 검색 (예: 연차)" aria-label="검색어">
+      <button type="submit">검색</button>
+    </form>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ① 첫 화면 -->
+  <section class="screen" id="s-home">
+    <div class="home">
+      <div class="panel">
+        <h2 class="sec">최근 개정 법령 <small>국가법령정보센터 기준</small></h2>
+        <div class="recent">
+          <ul id="recentList"></ul>
+        </div>
+        <p class="note">실제 앱에서는 국가법령정보센터에서 받아온 개정 내역이 최신순으로 표시됩니다. 지금 목록은 자리만 채운 <span class="ex">예시</span>입니다.</p>
+      </div>
+      <div class="panel">
+        <h2 class="sec">수록 법령 <small>22개 · 시행령·시행규칙 포함</small></h2>
+        <ul class="laws" id="lawList"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 법령 화면 -->
+  <section class="screen" id="s-law" hidden>
+    <div class="lawhead">
+      <div class="crumb"><a href="#home">수록 법령</a> › <span id="lawCrumb">근로기준법</span></div>
+      <h1 id="lawTitle">근로기준법</h1>
+      <div class="lawmeta"><span>시행 YYYY. MM. DD.</span><span>법률 제○○○○○호</span><span class="ex">예시</span></div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="법령 종류">
+      <button role="tab" aria-selected="true" data-tab="법률">법률</button>
+      <button role="tab" aria-selected="false" data-tab="시행령">시행령</button>
+      <button role="tab" aria-selected="false" data-tab="시행규칙">시행규칙</button>
+    </div>
+    <div class="lawbody">
+      <details class="toc" id="toc" open>
+        <summary>조문 목차 <span aria-hidden="true">▾</span></summary>
+        <div id="tocList"></div>
+      </details>
+      <div class="articles" id="articles"></div>
+    </div>
+  </section>
+
+  <!-- ③ 검색 결과 -->
+  <section class="screen" id="s-search" hidden>
+    <div class="reshead">
+      <h1>검색어 <q id="qShow">연차</q></h1>
+      <span>3개 법령 · 7개 조문 <span class="ex">예시</span></span>
+    </div>
+    <div class="results">
+      <nav class="filter" aria-label="법령별 보기">
+        <a href="#search" class="on">전체 <b>7</b></a>
+        <a href="#search">근로기준법 <b>3</b></a>
+        <a href="#search">근로기준법 시행령 <b>2</b></a>
+        <a href="#search">근로기준법 시행규칙 <b>2</b></a>
+      </nav>
+      <div class="groups" id="groups"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const LAWS = [
+  "근로기준법", "최저임금법", "임금채권보장법", "근로자퇴직급여 보장법",
+  "남녀고용평등과 일·가정 양립 지원에 관한 법률", "기간제 및 단시간근로자 보호 등에 관한 법률",
+  "파견근로자 보호 등에 관한 법률", "직업안정법", "노동조합 및 노동관계조정법",
+  "공무원의 노동조합 설립 및 운영 등에 관한 법률", "교원의 노동조합 설립 및 운영 등에 관한 법률",
+  "근로자참여 및 협력증진에 관한 법률", "노동위원회법", "산업안전보건법", "중대재해 처벌 등에 관한 법률",
+  "산업재해보상보험법", "고용보험법", "고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률",
+  "외국인근로자의 고용 등에 관한 법률", "근로자복지기본법", "채용절차의 공정화에 관한 법률", "민법"
+];
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// 첫 화면: 최근 개정 (자리 채움)
+const kinds = ["일부개정", "일부개정", "타법개정", "일부개정", "전부개정"];
+document.getElementById("recentList").innerHTML = kinds.map((k, i) => `
+  <li><span class="kind">${k}</span>
+    <a class="name" href="#law">법령 이름이 여기에 표시됩니다 <span class="ex">예시</span></a>
+    <span class="meta">공포 YYYY. MM. DD. · 시행 YYYY. MM. DD.</span></li>`).join("");
+
+// 첫 화면: 수록 법령 22개
+document.getElementById("lawList").innerHTML = LAWS.map(n => `<li><a href="#law" data-law="${esc(n)}">${esc(n)}</a></li>`).join("");
+
+// 법령 화면: 목차와 본문 (자리 채움)
+const CH = [
+  { ch: "제1장 장 제목", jo: [1, 2, 3] },
+  { ch: "제2장 장 제목", jo: [4, 5, 6, 7] },
+  { ch: "제3장 장 제목", jo: [8, 9, 10] }
+];
+function renderLaw(tab) {
+  const label = tab === "법률" ? "" : " " + tab;
+  document.getElementById("tocList").innerHTML = CH.map(c => `
+    <div class="ch">${c.ch} <span class="ex">예시</span></div>
+    ${c.jo.map(n => `<a href="#law" data-jo="${n}" class="${n === 1 ? "on" : ""}">제${n}조 (조문 제목)</a>`).join("")}`).join("");
+  document.getElementById("articles").innerHTML = CH.map(c => `
+    <div class="chapter">${c.ch}</div>
+    ${c.jo.map(n => `
+      <article class="jo" id="jo-${n}">
+        <h3>제${n}조(조문 제목) <span class="ex">예시</span>${n === 5 ? '<span class="tag">개정 YYYY. MM. DD.</span>' : ""}</h3>
+        <p>이 자리에 국가법령정보센터에서 받아온${label} 제${n}조의 실제 조문 내용이 그대로 표시됩니다. 지금 보이는 글은 글자 크기와 줄 간격을 보여주기 위한 예시 문장입니다.</p>
+        ${n % 3 === 1 ? `<ol><li>항이나 호가 있는 조문은 이렇게 번호를 붙여 한 줄씩 보여줍니다.</li><li>두 번째 항목 자리입니다.</li></ol>` : ""}
+      </article>`).join("")}`).join("");
+}
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  renderLaw(b.dataset.tab);
+}));
+document.getElementById("tocList").addEventListener("click", e => {
+  const a = e.target.closest("a[data-jo]"); if (!a) return;
+  e.preventDefault();
+  document.querySelectorAll("#tocList a").forEach(x => x.classList.toggle("on", x === a));
+  document.getElementById("jo-" + a.dataset.jo)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+});
+function setLaw(name) {
+  document.getElementById("lawTitle").textContent = name;
+  document.getElementById("lawCrumb").textContent = name;
+  const civil = name === "민법";
+  document.querySelectorAll(".tabs button").forEach(b => { b.hidden = civil && b.dataset.tab !== "법률"; b.setAttribute("aria-selected", b.dataset.tab === "법률"); });
+  renderLaw("법률");
+}
+document.getElementById("lawList").addEventListener("click", e => {
+  const a = e.target.closest("a[data-law]"); if (a) setLaw(a.dataset.law);
+});
+setLaw("근로기준법");
+
+// 검색 결과: 법령별 묶음 (자리 채움)
+function renderSearch(q) {
+  const word = esc(q || "연차");
+  document.getElementById("qShow").textContent = q || "연차";
+  const groups = [["근로기준법", 3], ["근로기준법 시행령", 2], ["근로기준법 시행규칙", 2]];
+  document.getElementById("groups").innerHTML = groups.map(([g, cnt]) => `
+    <section class="group">
+      <header><h2>${g}</h2><span>${cnt}개 조문</span><span class="ex">예시</span></header>
+      ${Array.from({ length: cnt }, (_, i) => `
+        <a class="hit" href="#law">
+          <div class="t">제○조(조문 제목)</div>
+          <p class="s">…검색어가 들어 있는 문장 앞뒤 일부가 이렇게 표시되고, <mark>${word}</mark> 부분은 노란색으로 강조됩니다…</p>
+        </a>`).join("")}
+    </section>`).join("");
+}
+renderSearch("연차");
+document.getElementById("searchForm").addEventListener("submit", e => {
+  e.preventDefault();
+  renderSearch(document.getElementById("q").value.trim());
+  location.hash = "search"; show();
+});
+
+// 화면 전환
+function show() {
+  const v = (location.hash || "#home").slice(1);
+  const name = ["home", "law", "search"].includes(v) ? v : "home";
+  ["home", "law", "search"].forEach(s => document.getElementById("s-" + s).hidden = s !== name);
+  document.querySelectorAll(".demo nav a").forEach(a => a.dataset.go === name ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", show);
+const mq = matchMedia("(max-width: 860px)");
+const syncToc = () => { document.getElementById("toc").open = !mq.matches; };
+mq.addEventListener?.("change", syncToc); syncToc();
+show();
+</script>
+</body>
+</html>
