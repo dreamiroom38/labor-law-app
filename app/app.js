@@ -1,6 +1,7 @@
 /* 노동법전 앱
  * 데이터: data/index.json (법령 목록·최근 개정), data/laws/<법령ID>.json (조문)
- * 화면 주소: #/ 첫 화면, #/law/<법령ID>[/<조문키>] 법령 화면, #/search/<검색어> 검색 결과
+ * 화면 주소: #home 첫 화면, #law-<법령ID>[-<조문키>] 법령 화면, #search 검색 결과(검색어는 화면이 기억)
+ * 주소에는 영문·숫자·하이픈만 쓴다 (Claude 미리 보기 페이지에서도 동작하도록)
  */
 "use strict";
 
@@ -54,13 +55,13 @@ function renderHome() {
   const rec = INDEX.recent.slice(0, recentShown).map(r => {
     const soon = r.enfDate > today ? `<span class="soon">시행 예정</span>` : "";
     return `<li><span class="kind">${esc(r.revType)}</span>
-      <a class="name" href="#/law/${r.id}">${esc(r.name)}</a>
+      <a class="name" href="#law-${r.id}">${esc(r.name)}</a>
       <span class="meta">공포 ${ymd(r.promDate)} · 시행 ${ymd(r.enfDate)}${soon}</span>
       ${r.summary ? `<p class="sum">${esc(r.summary)}</p>` : ""}</li>`;
   }).join("");
   const laws = INDEX.groups.map(g => {
     const first = g.docs[0];
-    return first ? `<li><a href="#/law/${first.id}">${esc(g.name)}</a></li>` : "";
+    return first ? `<li><a href="#law-${first.id}">${esc(g.name)}</a></li>` : "";
   }).join("");
   main.innerHTML = `
   <section class="home">
@@ -102,19 +103,19 @@ async function renderLaw(id, artKey) {
   const group = INDEX.groups.find(g => g.name === doc.group);
   const tabs = ["법률", "시행령", "시행규칙"].map(k => {
     const d = group.docs.find(x => x.kind === k);
-    return d ? `<a role="tab" class="tabbtn" aria-selected="${d.id === id}" href="#/law/${d.id}">${k}</a>` : "";
+    return d ? `<a role="tab" class="tabbtn" aria-selected="${d.id === id}" href="#law-${d.id}">${k}</a>` : "";
   }).join("");
   const toc = [], arts = [];
   for (const a of doc.articles) {
     if (a.h) { toc.push(`<div class="ch">${esc(a.h)}</div>`); arts.push(`<div class="chapter">${esc(a.h)}</div>`); continue; }
-    toc.push(`<a href="#/law/${id}/${a.k}" data-k="${a.k}"><span class="art-n">${esc(a.n)}</span> ${esc(a.t)}</a>`);
+    toc.push(`<a href="#law-${id}-${a.k}" data-k="${a.k}"><span class="art-n">${esc(a.n)}</span> ${esc(a.t)}</a>`);
     arts.push(articleHTML(a, doc));
   }
   const reason = doc.reason.join("\n");
   main.innerHTML = `
   <section>
     <div class="lawhead">
-      <div class="crumb"><a href="#/">수록 법령</a> › <span>${esc(doc.group)}</span></div>
+      <div class="crumb"><a href="#home">수록 법령</a> › <span>${esc(doc.group)}</span></div>
       <h1>${esc(doc.name)}</h1>
       <div class="lawmeta">
         <span>[시행 ${ymd(doc.enfDate)}]</span>
@@ -203,7 +204,7 @@ async function renderSearch(q) {
   }
   const total = groups.reduce((s, g) => s + g.hits.length, 0);
   if (!groups.some(g => g.id === filterState.doc)) filterState.doc = "all";
-  const jump = byName && !scope ? `<div class="jump">${byName.map(m => `<a href="#/law/${m.id}">${esc(m.name)} 바로가기 ›</a>`).join("")}</div>` : "";
+  const jump = byName && !scope ? `<div class="jump">${byName.map(m => `<a href="#law-${m.id}">${esc(m.name)} 바로가기 ›</a>`).join("")}</div>` : "";
 
   const filter = `<a data-doc="all" class="${filterState.doc === "all" ? "on" : ""}"><span>전체</span> <b>${total}</b></a>` +
     groups.map(g => `<a data-doc="${g.id}" class="${filterState.doc === g.id ? "on" : ""}" title="${esc(g.m.name)}"><span>${esc(shortName(g.m))}</span> <b>${g.hits.length}</b></a>`).join("");
@@ -215,7 +216,7 @@ async function renderSearch(q) {
     const list = all ? g.hits : g.hits.slice(0, LIMIT);
     return `<section class="group">
       <header><h2>${esc(g.m.name)}</h2><span>${g.hits.length}개 조문</span></header>
-      ${list.map(a => `<a class="hit" href="#/law/${g.id}/${a.k}">
+      ${list.map(a => `<a class="hit" href="#law-${g.id}-${a.k}">
           <div class="t">${esc(a.n)}${a.t ? "(" + markTerms(esc(a.t), lower) + ")" : ""}</div>
           <p class="s">${snippet(a, lower)}</p></a>`).join("")}
       ${!all && g.hits.length > LIMIT ? `<button class="showall" data-exp="${g.id}">${g.hits.length - LIMIT}개 더 보기</button>` : ""}
@@ -267,14 +268,16 @@ function markTerms(html, terms) {
 
 /* ───────── 주소에 따라 화면 바꾸기 ───────── */
 function renderMissing() {
-  main.innerHTML = `<div class="empty">찾는 화면이 없습니다. <a href="#/" style="color:var(--accent)">첫 화면으로</a></div>`;
+  main.innerHTML = `<div class="empty">찾는 화면이 없습니다. <a href="#home" style="color:var(--accent)">첫 화면으로</a></div>`;
 }
+let lastQuery = "";
+try { lastQuery = sessionStorage.getItem("q") || ""; } catch (e) {}
 async function route() {
-  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
-  const [view, ...rest] = h.split("/");
+  const h = location.hash.replace(/^#/, "");
   try {
-    if (view === "law") await renderLaw(rest[0], rest[1]);
-    else if (view === "search") { filterState.expanded.clear(); await renderSearch(rest.join("/")); }
+    let m;
+    if ((m = h.match(/^law-([0-9A-Za-z]+)(?:-([0-9A-Za-z]+))?$/))) await renderLaw(m[1], m[2]);
+    else if (h === "search" && lastQuery) { filterState.expanded.clear(); await renderSearch(lastQuery); }
     else { $("#q").value = ""; renderHome(); window.scrollTo(0, 0); }
   } catch (e) {
     main.innerHTML = `<div class="empty">자료를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침해 주세요.<br><small>${esc(e.message)}</small></div>`;
@@ -286,8 +289,9 @@ $("#searchForm").addEventListener("submit", e => {
   const q = $("#q").value.trim();
   if (!q) return;
   filterState.doc = "all";
-  const target = "#/search/" + encodeURIComponent(q);
-  if (location.hash === target) route(); else location.hash = target;
+  lastQuery = q;
+  try { sessionStorage.setItem("q", q); } catch (err) {}
+  if (location.hash === "#search") route(); else location.hash = "search";
   $("#q").blur();
 });
 window.addEventListener("hashchange", route);
